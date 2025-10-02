@@ -1,0 +1,209 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Jefferson49\Webtrees\Module\OAuth2Client;
+
+use Fisharebest\Webtrees\Http\RequestHandlers\ControlPanel;
+use Fisharebest\Webtrees\I18N;
+use Fisharebest\Webtrees\View;
+use Jefferson49\Webtrees\Internationalization\MoreI18N;
+use Jefferson49\Webtrees\Module\OAuth2Client\OAuth2Client;
+
+/**
+ * @var string $title
+ * @var string $base_url
+ * @var array  $trees_with_hidden_menu
+ * @var bool   $show_webtrees_login_in_menu
+ * @var bool   $dont_show_webtrees_login_menu
+ * @var bool   $hide_webtrees_sign_in
+ * @var bool   $debugging_activated
+ * @var bool   $use_webtrees_password
+ * @var bool   $sync_provider_email
+ * @var bool   $connect_with_providers
+ */
+
+$uses_https   = strpos(Strtoupper($base_url), 'HTTPS://') === false ? false : true;
+$redirect_url = OAuth2Client::getRedirectUrl();
+$modified_redirect_url = (OAuth2Client::getRedirectUrl(true) !== OAuth2Client::getRedirectUrl(false));
+
+?>
+
+<?= view('components/breadcrumbs', ['links' => [route(ControlPanel::class) => I18N::translate('Control panel'), e($title)]]) ?>
+
+<h1><?=e($title) ?></h1>
+
+<div class="row mb-3"><?= view('icons/spacer') ?></div>
+
+<?php if (!$uses_https) : ?>
+    <div class="alert alert-danger">
+        <p><?= I18N::translate('Currently, webtrees does not use the HTTPS protocol. If signing in with authorization providers, it is urgently recommended to use HTTPS in order to encrypt the communication with the authorization provider. If your server supports the protocol, HTTPS can be activated by changing "base_url" in the webtrees "config.ini.php" file. Currently, "base_url" does not start with "https://".') ?></p>
+    </div>
+<?php endif ?>
+
+<div class="h4">Redirect URL</div>
+<div class="row mb-3">
+    <label class="col-sm-3 col-form-label wt-page-options-label" for="redirect_url">Redirect URL</label>
+    <div class="col-sm-9 wt-page-options-value">
+        <input type="text" class="form-control" id="redirect_url-name" name="redirect_url" value="<?= e($redirect_url) ?>" dir="auto" required="required" disabled >
+    </div>		
+	<div class="row mb-3"><?= view('icons/spacer') ?></div>
+	<?php if ($modified_redirect_url) : ?>
+		<div class="alert alert-warning">
+			<p><?= I18N::translate('The redirect URL for OAuth 2.0 communication has changed in custom module versions >= 1.1.0. If certain connections with authorization providers fail, you might need to update the authorization provider settings with the new redirect URL.') ?></p>
+		</div>
+	<?php endif ?>
+</div>
+
+<form method="post" id="settings-form">
+	<?= csrf_field() ?>
+	<input type="hidden" name="save" id="save" value="1">
+  
+	<div class="h4">
+		<?= I18N::translate('Settings for Sign In Menus') ?>	
+	</div>
+
+	<?php if ($hide_webtrees_sign_in) : ?>
+		<div class="alert alert-danger">
+			<p><?= I18N::translate('Currently, the webtrees sign in with Username/Password is deactivated.') . ' ' .
+			I18N::translate('Therefore, it is only possible to sign in with an authorization provider. Please be sure to establish a webtrees administrator account with an authorization provider. Otherwise, administrator sign in might not be possible any more.') ?></p>
+		</div>
+	<?php elseif (!$show_webtrees_login_in_menu && $dont_show_webtrees_login_menu) : ?>
+		<div class="alert alert-danger">
+			<p><?= I18N::translate('Currently, all menus to directly sign in with a webtrees Username/Password are deactivated.') . ' ' . 
+			I18N::translate('Therefore, it is only possible to sign in with an authorization provider. Please be sure to establish a webtrees administrator account with an authorization provider. Otherwise, administrator sign in might not be possible any more.') ?></p>
+		</div>
+	<?php elseif ($dont_show_webtrees_login_menu && sizeof($trees_with_hidden_menu) > 0) : ?>
+		<div class="alert alert-warning">
+			<p><?= I18N::translate('Currently, the webtrees sign in menu is deactivated and the custom module sign in menu is hidden for the following trees: %s. Some of the users will not be able to sign in. Please consider to activate one of the sign in menus with the settings below.', implode (', ',$trees_with_hidden_menu)) ?></p>
+		</div>
+	<?php endif ?>
+
+	<fieldset class="mb-3">
+		<div class="row">
+			<legend class="col-form-label col-sm-3">
+				<?= I18N::translate('Show original webtrees sign in as menu item') ?>
+			</legend>
+			<div class="col-sm-9">
+				<?= view('components/checkbox', ['label' => MoreI18N::xlate('Show'), 'name' => OAuth2Client::PREF_SHOW_WEBTREES_LOGIN_IN_MENU, 'checked' => $show_webtrees_login_in_menu]) ?>
+				<div class="form-text">
+					<?= I18N::translate('By selecting/unselecting this option, it is possible to activate/deactivate the sign in menu entry for webtrees. If deactivated, only sign in menu entries for authorization providers might be shown.'); ?>
+				</div>
+			</div>
+		</div>
+	</fieldset>
+
+	<fieldset class="mb-3">
+		<div class="row">
+			<legend class="col-form-label col-sm-3">
+				<?= I18N::translate('Hide the webtrees sign in menu') ?>
+			</legend>
+			<div class="col-sm-9">
+				<?= view('components/checkbox', ['label' => I18N::translate('Hide'), 'name' => OAuth2Client::PREF_DONT_SHOW_WEBTREES_LOGIN_MENU, 'checked' => $dont_show_webtrees_login_menu]) ?>
+				<div class="form-text">
+					<?= I18N::translate('By selecting this option, it is possible to hide the original webtrees sign in menu. This might be helpful if the custom module specific top menu for sign in is used instead.'); ?>
+				</div>
+			</div>
+		</div>
+	</fieldset>
+
+	<fieldset class="mb-3">
+		<div class="row">
+			<legend class="col-form-label col-sm-3">
+				<?= I18N::translate('Hide webtrees sign in (with Username/Password) on login page') ?>
+			</legend>
+			<div class="col-sm-9">
+				<?= view('components/checkbox', ['label' => I18N::translate('Hide'), 'name' => OAuth2Client::PREF_HIDE_WEBTREES_SIGN_IN, 'checked' => $hide_webtrees_sign_in]) ?>
+				<div class="form-text">
+					<?= I18N::translate('By selecting this option, it is possible to hide the webtrees sign in (with Username/Password) on the login page.'); ?>
+				</div>
+			</div>
+		</div>
+	</fieldset>
+
+	<div class="h4">
+		<?= I18N::translate('Settings for Password, Email, and Connection Management') ?>
+	</div>
+
+	<fieldset class="mb-3">
+		<div class="row">
+			<legend class="col-form-label col-sm-3">
+				<?= I18N::translate('Keep email address synchronized with authorization provider') ?>
+			</legend>
+			<div class="col-sm-9">
+				<?= view('components/checkbox', ['label' => I18N::translate('Keep synchronized'), 'name' => OAuth2Client::PREF_SYNC_PROVIDER_EMAIL, 'checked' => $sync_provider_email]) ?>
+				<div class="form-text">
+					<?= I18N::translate('This selection prevents a user with the same email address in webtrees and at the authorization provider from changing the email address in webtrees. If the email address at the authorization provider changes, the email address in webtrees will be updated during sign in. If the administrator changes the email address in the webtrees user management, the email address synchronization will no longer continue.'); ?>
+				</div>
+			</div>
+		</div>
+	</fieldset>
+
+	<fieldset class="mb-3">
+		<div class="row">
+			<legend class="col-form-label col-sm-3">
+				<?= I18N::translate('Use webtrees password in parallel') ?>
+			</legend>
+			<div class="col-sm-9">
+				<?= view('components/checkbox', ['label' => MoreI18N::xlate('Allow'), 'name' => OAuth2Client::PREF_USE_WEBTREES_PASSWORD, 'checked' => $use_webtrees_password]) ?>
+				<div class="form-text">
+					<?= I18N::translate('This option allows users, who register with an authorization provider, to additionally sign in with a webtrees password.'); ?>
+				</div>
+			</div>
+		</div>
+	</fieldset>
+
+	<fieldset class="mb-3">
+		<div class="row">
+			<legend class="col-form-label col-sm-3">
+				<?= I18N::translate('Allow existing webtrees users to connect with an authorization provider') ?>
+			</legend>
+			<div class="col-sm-9">
+			<?= view('components/checkbox', ['label' => MoreI18N::xlate('Allow'), 'name' => OAuth2Client::PREF_CONNECT_WITH_PROVIDERS, 'checked' => $connect_with_providers]) ?>
+			<div class="form-text">
+					<?= I18N::translate('If selecting this option, an existing webtrees user can connect the webtrees account with an authorization provider. This will allow users to additionally sign in with an authorization providers while still using the webtrees user and password.') ?>
+			</div>
+		</div>
+	</fieldset>
+
+	<div class="h4">
+		<?= I18N::translate('Debug Settings') ?>
+	</div>
+
+	<fieldset class="mb-3">
+		<div class="row">
+			<legend class="col-form-label col-sm-3">
+				<?= I18N::translate('Debug logs') ?>
+			</legend>
+			<div class="col-sm-9">
+				<?= view('components/checkbox', ['label' => MoreI18N::xlate('Activate'), 'name' => OAuth2Client::PREF_DEBUGGING_ACTIVATED, 'checked' => $debugging_activated]) ?>
+				<div class="form-text">
+					<?= I18N::translate('By selecting this option, additional debug information about the protocol flow between webtrees and the authorization provider will be logged in the webtrees website logs.'); ?>
+				</div>
+			</div>
+		</div>
+	</fieldset>
+
+    <div class="row mb-3">
+		<div class="col">
+			<p></p>
+			<button type="submit" class="btn btn-primary">
+				<?= view('icons/save') ?>
+				<?= MoreI18N::xlate('save') ?>
+			</button>
+		</div>		
+	</div>
+
+</form>	
+
+<?php View::push('javascript') ?>
+<script>
+    $('#select-all-1').change(function(e) {
+        if (e.currentTarget.checked) {
+            $('.mb-3 .row').find('input[type="checkbox"]').prop('checked', true);
+        } else {
+            $('.mb-3 .row').find('input[type="checkbox"]').prop('checked', false);
+        }
+    });
+</script>
+<?php View::endpush() ?>

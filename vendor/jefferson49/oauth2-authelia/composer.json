@@ -1,0 +1,29 @@
+{
+    "name": "jefferson49/oauth2-authelia",
+    "description": "Authelia OAuth 2.0 Client Provider for The PHP League OAuth2-Client",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jefferson49",
+            "homepage": "https://github.com/Jefferson49"
+        }
+    ],
+    "keywords": [
+        "oauth",
+        "oauth2",
+        "client",
+        "authorization",
+        "authentication",
+        "Authelia"
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^7.3 || ^8.0",
+        "league/oauth2-client": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jefferson49\\OAuth2\\Client\\": "src/"
+        }
+    }
+}
