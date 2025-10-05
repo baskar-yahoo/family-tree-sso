@@ -1,0 +1,19 @@
+# Composer dependencies
+/vendor/
+
+# Composer lock file
+# It's generally recommended to commit composer.lock for consistent dependency installations.
+# However, if you prefer to always use the latest compatible versions and regenerate it, you can uncomment this line.
+# # composer.lock
+
+# Python pytest cache (not relevant for a PHP project)
+.pytest_cache/
+
+# Compiled translation files (these can be generated from .po files)
+*.mo
+
+# Temporary Composer files
+vendor/composer/*.zip~
+
+# Presentation files (unless they are part of the application's deployable assets)
+*.pptx
