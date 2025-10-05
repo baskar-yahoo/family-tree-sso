@@ -1,9 +1,23 @@
-[![Latest Release](https://img.shields.io/github/v/release/Jefferson49/webtrees-oauth2-client?display_name=tag)](https://github.com/Jefferson49/webtrees-oauth2-client/releases/latest)
-[![webtrees major version](https://img.shields.io/badge/webtrees-v2.1.x-green)](https://webtrees.net/download)
-[![webtrees major version](https://img.shields.io/badge/webtrees-v2.2.x-green)](https://webtrees.net/download)
 
-# OAuth 2.0 Client for webtrees
+# Family-Tree-sso for webtrees
 A [webtrees](https://webtrees.net) 2.1/2.2 custom module to provide [OAuth 2.0](https://en.wikipedia.org/wiki/OAuth) single sign on ([SSO](https://en.wikipedia.org/wiki/Single_sign-on)) with OAuth 2.0 authorization providers.
+## Production Installation Instructions
+
+To install the Family-Tree-sso module in a production environment:
+
+1. Download the latest release of the module from the GitHub releases page (look for a file named like `family-tree-sso_v*.zip` under "Assets").
+2. Unzip the downloaded file.
+3. Copy the extracted folder named `family-tree-sso` into the `modules_v4` directory of your webtrees installation.
+4. (If not already present) Install Composer dependencies:
+    - Open a terminal in the `family-tree-sso` directory.
+    - Run: `composer install`
+    - This will generate the `vendor` directory and install required PHP packages.
+5. Log in to your webtrees site as an administrator.
+6. Go to Control Panel → All Modules and ensure the Family-Tree-sso module is enabled.
+7. Configure your desired OAuth2 providers by editing your webtrees `config.ini.php` file as described in the README.
+8. Make sure your site uses HTTPS for security.
+9. Test the login with your configured OAuth2 provider.
+
 
 ##  Table of contents
 This README file contains the following main sections:
@@ -38,8 +52,8 @@ This README file contains the following main sections:
 +   [License](#license)
 +   [Github Repository](#github-repository)
 
-## What are the benefits of this module?
-+ The module provides single sign on ([SSO](https://en.wikipedia.org/wiki/Single_sign-on)) into the [webtrees](https://webtrees.net) application based on the [OAuth 2.0](https://en.wikipedia.org/wiki/OAuth) standard.
+## What are the benefits of Family-Tree-sso?
++ The Family-Tree-sso module provides single sign on ([SSO](https://en.wikipedia.org/wiki/Single_sign-on)) into the [webtrees](https://webtrees.net) application based on the [OAuth 2.0](https://en.wikipedia.org/wiki/OAuth) standard.
 + A pre-configured set of authorization providers can be selected during webtrees login.
 + If choosing to register with an authorization provider, the user account data (i.e. user name, real name, email address) of the authorization provider is used to create a new user account in webtrees.
 + Alternatively, an existing webtrees user can be connected to an authorization provider. In this case, the user credentials in webtrees stay the same. However, an additional way to sign into the webtrees account is provided.
@@ -54,9 +68,9 @@ It is **highly recommended to use** the **HTTPS** protocol for your webtrees ins
 
 Please check whether your **webtrees BASE_URL** in the config.ini.php file **starts with "https"**, e.g. https://my_site.net/webtrees.
 
-## Installation
-+ Download the [latest release](https://github.com/Jefferson49/webtrees-oauth2-client/releases/latest) of the module by downloading the "**oauth2_client_v\*.zip**" file from "Assets". Do not download "Source code.zip".
-+ Unzip the downloaded file and copy the included folder "oauth2_client" into the "module_v4" folder of your webtrees installation
+## Manual Installation (Development)
++ Download the [latest release](https://github.com/Jefferson49/webtrees-oauth2-client/releases/latest) of the module by downloading the "**family-tree-sso_v\*.zip**" file from "Assets". Do not download "Source code.zip".
+ Unzip the downloaded file and copy the included folder "family-tree-sso" into the "module_v4" folder of your webtrees installation
 + Check if the module is activated in the control panel:
   + Login to webtrees as an administrator
 	+ Go to "Control Panel/All Modules", and find the module called "ExtendedImportExport"
@@ -75,7 +89,7 @@ If a new webtrees user is created (i.e. registered), the user name and the email
 ## Supported Authorization Providers
 The OAuth 2.0 Client for webtrees uses the OAuth 2.0 implementation of the [The League](https://oauth2-client.thephpleague.com/), which allows developers to create OAuth 2.0 clients that interface with a wide-variety of OAuth 2.0 providers. Within this concept, The League supports serveral "[official providers](https://oauth2-client.thephpleague.com/providers/league/)". As far as suitable for webtrees, these official providers were included, see list below. 
 
-Currently, the following authorization providers are supported:
+Currently, the following authorization providers are supported by Family-Tree-sso:
 + **Generic** (can be configured for several authorization providers)
 + **Authentik** (can be configured with the Generic provider)
 + **Dropbox**
