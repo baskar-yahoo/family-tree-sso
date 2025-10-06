@@ -60,9 +60,10 @@ class WordPressAuthorizationProvider extends AbstractAuthorizationProvider imple
         $options = array_merge($options, [
             'redirectUri'             => $redirectUri,
             'scopes'                  => 'openid profile email',
-            'scopeSeparator'          => ' '
+            'scopeSeparator'          => ' ',
+            'responseResourceOwnerId' => 'sub' // <-- THIS IS THE FIX
         ]);
-        
+
         $this->provider = new GenericProvider($options, $collaborators);
 
         if (isset($options['signInButtonLabel'])) {
@@ -77,30 +78,31 @@ class WordPressAuthorizationProvider extends AbstractAuthorizationProvider imple
      * 
      * @return User
      */
-    public function getUserData(AccessToken $token) : AuthorizationProviderUser {
+    public function getUserData(AccessToken $token): AuthorizationProviderUser
+    {
 
         $user           = parent::getUserData($token);
         $user_data      = $user->getUserData();
+        $resource_owner = $user->getRessourceOwner();
 
-        //Apply specific user data provided by WordPress
-        $first_name   = $user_data['first_name']   ?? '';
-        $last_name    = $user_data['last_name']    ?? '';
-        $display_name = $user_data['display_name'] ?? '';
+        // MODIFICATION: Handle data structure from WP OAuth Server plugin.
+        // The standard 'sub' field is used as the unique ID.
+        // 'display_name' is used for the real name, as first/last are not provided.
 
-        $real_name = $first_name;
+        // The parent::getUserData call already correctly sets the ID from the 'sub' field.
+        // We just need to correctly set the name.
 
-        if ((strlen($first_name) > 0) && (strlen($last_name) > 0)) {
-            $real_name .= ' ';
-        } 
+        $real_name = $user_data['display_name'] ?? '';
 
-        $real_name .= $last_name;
-
-        //If no real name could be generated from first/last name, use display name
+        // If display_name is empty, fall back to the user_login.
         if ($real_name === '') {
-            $real_name = $display_name;
+            $real_name = $user_data['user_login'] ?? '';
         }
 
         $user->setRealName($real_name);
+
+        // The username and email are already correctly parsed by the parent method,
+        // so no changes are needed for them.
 
         return $user;
     }
@@ -111,7 +113,8 @@ class WordPressAuthorizationProvider extends AbstractAuthorizationProvider imple
      * @return array   An array of option names, which can be set for this provider.
      *                 Options include `clientId`, `clientSecret`, `redirectUri`, etc.
      */
-    public static function getRequiredOptions() : array {
+    public static function getRequiredOptions(): array
+    {
         return [
             'clientId',
             'clientSecret',
@@ -119,6 +122,6 @@ class WordPressAuthorizationProvider extends AbstractAuthorizationProvider imple
             'urlAccessToken',
             'urlResourceOwnerDetails',
             'signInButtonLabel',
-        ];   
-    }    
+        ];
+    }
 }

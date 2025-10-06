@@ -111,6 +111,42 @@ class LoginWithAuthorizationProviderAction implements RequestHandlerInterface
         $oauth2_client   = $this->module_service->findByName(OAuth2Client::activeModuleName());
         $log_module      = Functions::moduleLogInterface($oauth2_client);
 
+        // START: Custom comprehensive debug block to show initial SSO state
+        CustomModuleLog::addDebugLog($log_module, 'SSO Action Start. Comprehensive State Details:', $tree);
+        CustomModuleLog::addDebugLog($log_module, '====================================================', $tree);
+
+        // Initial Request Parameters from URL
+        CustomModuleLog::addDebugLog($log_module, '[Request] Webtrees User (at start): ' . ($user ? $user->userName() . ' (ID: ' . $user->id() . ')' : 'Guest'), $tree);
+        CustomModuleLog::addDebugLog($log_module, '[Request] Tree Name: ' . ($tree_name ?: 'None'), $tree);
+        CustomModuleLog::addDebugLog($log_module, '[Request] Authorization Code: ' . ($code ? 'Present - ' . substr($code, 0, 8) . '...' : 'Not Present'), $tree);
+        CustomModuleLog::addDebugLog($log_module, '[Request] State: ' . ($state ? 'Present - ' . $state : 'Not Present'), $tree);
+        CustomModuleLog::addDebugLog($log_module, '[Request] Provider Name (from URL): ' . ($provider_name ?: 'Not specified in URL'), $tree);
+        CustomModuleLog::addDebugLog($log_module, '[Request] Return URL: ' . ($url ?: 'None'), $tree);
+        CustomModuleLog::addDebugLog($log_module, '[Request] Connect Action: ' . ($connect_action ?: 'None'), $tree);
+
+        // Session Values (current state of the PHP session)
+        $session_provider = Session::get(OAuth2Client::activeModuleName() . OAuth2Client::SESSION_PROVIDER_NAME, 'Not Set');
+        $session_url = Session::get(OAuth2Client::activeModuleName() . OAuth2Client::SESSION_URL, 'Not Set');
+        $session_tree = Session::get(OAuth2Client::activeModuleName() . OAuth2Client::SESSION_TREE, 'Not Set');
+        $session_provider_to_connect = Session::get(OAuth2Client::activeModuleName() . OAuth2Client::SESSION_PROVIDER_TO_CONNECT, 'Not Set');
+        $session_user_to_connect = Session::get(OAuth2Client::activeModuleName() . OAuth2Client::SESSION_USER_TO_CONNECT, 'Not Set');
+        $session_oauth2state = Session::get(OAuth2Client::activeModuleName() . 'oauth2state', 'Not Set');
+        $session_pkceCode = Session::get(OAuth2Client::activeModuleName() . 'oauth2pkceCode', 'Not Set');
+
+        CustomModuleLog::addDebugLog($log_module, '---', $tree);
+        CustomModuleLog::addDebugLog($log_module, '[Session] Final Provider Name Used: ' . ($provider_name ?: $session_provider), $tree);
+        CustomModuleLog::addDebugLog($log_module, '[Session] Stored Provider Name: ' . $session_provider, $tree);
+        CustomModuleLog::addDebugLog($log_module, '[Session] Stored Return URL: ' . $session_url, $tree);
+        CustomModuleLog::addDebugLog($log_module, '[Session] Stored Tree Name: ' . $session_tree, $tree);
+        CustomModuleLog::addDebugLog($log_module, '[Session] Stored Provider to Connect: ' . $session_provider_to_connect, $tree);
+        CustomModuleLog::addDebugLog($log_module, '[Session] Stored User to Connect: ' . $session_user_to_connect, $tree);
+        CustomModuleLog::addDebugLog($log_module, '[Session] Stored OAuth2 State: ' . $session_oauth2state, $tree);
+        CustomModuleLog::addDebugLog($log_module, '[Session] Stored PKCE Code: ' . $session_pkceCode, $tree);
+
+        CustomModuleLog::addDebugLog($log_module, '====================================================', $tree);
+        // END: Custom comprehensive debug block
+
+
         //Save/load the provider name to/from the session
         if ($provider_name !== '') {
             Session::put(OAuth2Client::activeModuleName() . OAuth2Client::SESSION_PROVIDER_NAME, $provider_name);
